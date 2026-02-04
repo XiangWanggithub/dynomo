@@ -3,3 +3,4 @@ from .datautils import *
 from .davis import DavisDataset
 from .panoptic_sports import PanopticSportsDataset
 from .iphone import IphoneDataset
+from .custom_test import CustomTestDataset
