@@ -1,0 +1,166 @@
+╔═══════════════════════════════════════════════════════════════╗
+║            DynOMo CustomDataset 环境安装快速参考              ║
+╚═══════════════════════════════════════════════════════════════╝
+
+📋 环境要求
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ Linux系统 (Ubuntu 18.04+)
+  ✓ NVIDIA GPU + CUDA 11.6
+  ✓ Anaconda/Miniconda
+  ✓ 至少50GB磁盘空间
+
+🚀 方法一：一键安装（推荐）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+cd /home/w50037733/DynOMo
+bash install_env_custom.sh
+
+等待安装完成即可！
+
+📦 方法二：使用environment.yml
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. 创建环境
+conda env create -f environment.yml
+
+# 2. 激活环境
+conda activate dynomo
+
+# 3. 安装额外包
+pip install imageio-ffmpeg
+
+# 4. 安装Rasterizer
+cd diff-gaussian-rasterization-w-depth-vis-weights
+python setup.py install
+pip install .
+cd ..
+
+🔧 方法三：手动安装
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. 创建基础环境
+conda create -n dynomo python=3.10.13 -y
+conda activate dynomo
+
+# 2. 安装CUDA和PyTorch
+conda install -c nvidia/label/cuda-11.6.0 cuda-toolkit=11.6 -y
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 \
+    cudatoolkit=11.6 -c pytorch -c conda-forge -y
+
+# 3. 安装PyTorch3D
+conda install pytorch3d=0.7.5 -c pytorch3d -y
+
+# 4. 安装科学计算库
+conda install numpy=1.26.4 scipy=1.12.0 -y
+
+# 5. 安装其他依赖
+pip install opencv-python==4.9.0.80
+pip install imageio==2.34.0 imageio-ffmpeg==0.4.9
+pip install matplotlib==3.8.3
+pip install kornia==0.7.1
+pip install lpips==0.1.4
+pip install wandb==0.16.3
+pip install open3d==0.16.0
+pip install natsort==8.4.0
+pip install tqdm==4.65.0
+pip install h5py
+
+# 6. 安装Rasterizer
+cd diff-gaussian-rasterization-w-depth-vis-weights
+python setup.py install
+pip install .
+cd ..
+
+✅ 验证安装
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+conda activate dynomo
+
+# 检查Python版本
+python --version
+# 应显示: Python 3.10.13
+
+# 检查PyTorch和CUDA
+python -c "import torch; \
+    print(f'PyTorch: {torch.__version__}'); \
+    print(f'CUDA: {torch.cuda.is_available()}')"
+# 应显示:
+# PyTorch: 1.12.1+cu116
+# CUDA: True
+
+# 检查其他库
+python -c "import cv2, numpy, scipy, matplotlib, \
+    open3d, kornia, pytorch3d; \
+    print('✅ 所有库导入成功')"
+
+# 运行测试
+python test_custom_setup.py
+
+🐛 常见问题
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+问题1: conda solve很慢
+解决: 使用mamba
+    conda install mamba -n base -c conda-forge -y
+    mamba env create -f environment.yml
+
+问题2: CUDA不可用
+解决: 检查NVIDIA驱动
+    nvidia-smi
+    # 重装PyTorch
+    conda install pytorch==1.12.1 cudatoolkit=11.6 \
+        -c pytorch --force-reinstall -y
+
+问题3: Rasterizer编译失败
+解决: 设置环境变量
+    export CUDA_HOME=$CONDA_PREFIX
+    export PATH=$CUDA_HOME/bin:$PATH
+    export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+    cd diff-gaussian-rasterization-w-depth-vis-weights
+    rm -rf build
+    python setup.py install
+
+🎯 安装后的下一步
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. 激活环境
+conda activate dynomo
+
+# 2. 验证数据
+python examples/prepare_custom_data.py \
+    --basedir data/custom \
+    --sequence your_sequence
+
+# 3. 训练
+python scripts/train_custom.py \
+    --config configs/custom/dynomo_custom.py \
+    --sequence your_sequence \
+    --gpus 0
+
+# 4. 推理
+python scripts/inference_custom.py \
+    --results_dir experiments/custom/200_200_200/your_sequence \
+    --gpu 0
+
+📚 详细文档
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  安装conda环境指南.md      - 详细安装文档
+  README.md                 - 项目主文档
+  QUICKSTART_CUSTOM.md      - 快速开始
+  清理完成-请阅读.txt       - 代码清理总结
+
+💡 提示
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • 首次运行会自动下载预训练模型（DepthAnything, DINOv2）
+  • 建议使用SSD存储数据以提高读取速度
+  • 如果使用远程服务器，建议在tmux/screen中运行
+  • 训练时建议监控GPU使用情况: watch -n 1 nvidia-smi
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+环境名称: dynomo
+Python版本: 3.10.13
+CUDA版本: 11.6
+PyTorch版本: 1.12.1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
